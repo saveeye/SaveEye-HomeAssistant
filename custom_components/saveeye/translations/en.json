@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure SaveEye",
+        "description": "Ensure that the MQTT integration is set up and your SaveEye device publishes telemetry to the configured topic.",
+        "data": {
+          "friendly_name": "Device name",
+          "topic": "MQTT topic for SaveEye telemetry"
+        }
+      }
+    },
+    "abort": {
+      "mqtt_not_configured": "MQTT integration is not configured. Please set up MQTT first."
+    },
+    "error": {
+      "invalid_topic": "Please provide a valid MQTT topic."
+    }
+  }
+}
