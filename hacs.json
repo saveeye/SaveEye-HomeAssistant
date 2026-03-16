@@ -3,6 +3,5 @@
   "filename": "saveeye",
   "render_readme": true,
   "hide_default_branch": true,
-  "country": "GLOBAL",
   "homeassistant": "2024.1.0"
 }
