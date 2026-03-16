@@ -2,13 +2,13 @@
   "domain": "saveeye_mqtt",
   "name": "SaveEye",
   "version": "0.1.0",
-  "documentation": "https://github.com/yourusername/saveeye-mqtt-hacs",
+  "documentation": "https://github.com/saveeye/SaveEye-HomeAssistant",
   "requirements": [],
   "dependencies": [
     "mqtt"
   ],
   "codeowners": [
-    "@dthomasen"
+    "@saveeye"
   ],
   "integration_type": "device",
   "iot_class": "local_push",
