@@ -8,7 +8,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_FRIENDLY_NAME, CONF_TOPIC, DEFAULT_TOPIC, DOMAIN
+from .const import CONF_FRIENDLY_NAME, DOMAIN, CONF_SERIAL_NUMBER
 
 
 async def _mqtt_available(hass: HomeAssistant) -> bool:
@@ -28,23 +28,26 @@ class SaveEyeMqttConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="mqtt_not_configured")
 
         if user_input is not None:
-            topic: str = user_input.get(CONF_TOPIC, DEFAULT_TOPIC).strip()
+            serial_number: str = user_input.get(CONF_SERIAL_NUMBER, "").strip()
             friendly_name: str = user_input.get(CONF_FRIENDLY_NAME, "SaveEye")
 
-            if not topic:
-                errors["base"] = "invalid_topic"
+            if not serial_number:
+                errors["base"] = "invalid_serial_number"
             else:
+                await self.async_set_unique_id(serial_number)
+                self._abort_if_unique_id_configured()
+
                 data: Dict[str, Any] = {
-                    CONF_TOPIC: topic,
+                    CONF_SERIAL_NUMBER: serial_number,
                     CONF_FRIENDLY_NAME: friendly_name,
                     CONF_NAME: friendly_name,
                 }
-                return self.async_create_entry(title=friendly_name, data=data)
+                return self.async_create_entry(title=f"{friendly_name} ({serial_number})", data=data)
 
         data_schema = vol.Schema(
             {
+                vol.Required(CONF_SERIAL_NUMBER): str,
                 vol.Optional(CONF_FRIENDLY_NAME, default="SaveEye"): str,
-                vol.Optional(CONF_TOPIC, default=DEFAULT_TOPIC): str,
             }
         )
 

@@ -14,7 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
     CONF_FRIENDLY_NAME,
-    CONF_TOPIC,
+    CONF_SERIAL_NUMBER,
     DATA_KEY_COORDINATOR,
     DATA_KEY_UNSUBSCRIBE,
     DEFAULT_TOPIC,
@@ -52,7 +52,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up SaveEye from a config entry."""
-    topic: str = entry.data.get(CONF_TOPIC, DEFAULT_TOPIC)
+    topic: str = DEFAULT_TOPIC
+    serial_number: str = entry.data.get(CONF_SERIAL_NUMBER, "")
 
     coordinator = SaveEyeCoordinator(hass, "SaveEye MQTT")
 
@@ -69,6 +70,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             payload: Dict[str, Any] = cast(Dict[str, Any], loaded)
         except (UnicodeDecodeError, json.JSONDecodeError):
             LOGGER.warning("SaveEye MQTT: Failed to parse JSON from topic %s", msg.topic)
+            return
+
+        device_serial_raw: Any = payload.get("saveeyeDeviceSerialNumber")
+        device_serial: str = str(device_serial_raw) if device_serial_raw is not None else "unknown"
+
+        if serial_number and device_serial != serial_number:
             return
 
         coordinator.handle_payload(payload)

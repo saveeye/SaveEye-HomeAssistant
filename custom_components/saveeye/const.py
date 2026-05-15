@@ -1,7 +1,7 @@
 DOMAIN: str = "saveeye"
 
-CONF_TOPIC: str = "topic"
 CONF_FRIENDLY_NAME: str = "friendly_name"
+CONF_SERIAL_NUMBER: str = "serial_number"
 
 DEFAULT_TOPIC: str = "saveeye/telemetry"
 

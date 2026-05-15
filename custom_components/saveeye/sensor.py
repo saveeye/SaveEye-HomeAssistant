@@ -530,6 +530,8 @@ async def async_setup_entry(
     """
     stored = hass.data[DOMAIN][entry.entry_id]
     coordinator: SaveEyeCoordinator = stored[DATA_KEY_COORDINATOR]
+    serial_number = entry.data.get("serial_number", "")
+    friendly_name = entry.data.get("friendly_name", "SaveEye")
 
     created_keys: set[str] = set()
 
@@ -565,7 +567,13 @@ async def async_setup_entry(
         if not devices:
             return
 
-        _serial, payload = next(iter(devices.items()))
+        if serial_number:
+            payload = devices.get(serial_number)
+        else:
+            _serial, payload = next(iter(devices.items()))
+
+        if not payload:
+            return
 
         new_entities: list[SaveEyeSensor] = []
 
@@ -578,7 +586,7 @@ async def async_setup_entry(
                 continue
 
             created_keys.add(description.key)
-            new_entities.append(SaveEyeSensor(coordinator, description))
+            new_entities.append(SaveEyeSensor(coordinator, description, serial_number, friendly_name))
 
         if new_entities:
             async_add_entities(new_entities)
@@ -594,12 +602,20 @@ class SaveEyeSensor(SensorEntity):
     """Representation of a SaveEye sensor."""
 
     _attr_should_poll = False
+    _attr_has_entity_name = True
 
-    def __init__(self, coordinator: SaveEyeCoordinator, description: SaveEyeSensorDescription) -> None:
+    def __init__(self, coordinator: SaveEyeCoordinator, description: SaveEyeSensorDescription, serial_number: str, friendly_name: str) -> None:
         self._coordinator = coordinator
         self._description = description
-        self._device_serial: Optional[str] = None
-        self._attr_unique_id = f"saveeye_{description.key}"
+        self._device_serial: str = serial_number
+        self._friendly_name: str = friendly_name
+        self._is_legacy: bool = not bool(serial_number)
+        
+        if self._is_legacy:
+            self._attr_unique_id = f"saveeye_{description.key}"
+        else:
+            self._attr_unique_id = f"saveeye_{serial_number}_{description.key}"
+            
         self._attr_name = description.name
         self._attr_device_class = description.device_class
         self._attr_state_class = description.state_class
@@ -608,11 +624,21 @@ class SaveEyeSensor(SensorEntity):
     @property
     def device_info(self) -> DeviceInfo:
         serial: str = self._device_serial or "unknown"
+        if self._is_legacy:
+            devices: Dict[str, Dict[str, Any]] = self._coordinator.devices
+            if devices:
+                serial = next(iter(devices.keys()))
+
         identifiers = {(DOMAIN, f"{serial}_{self._description.device_identifier_suffix}")}
+        
+        name = self._friendly_name
+        if self._description.device_identifier_suffix == "remote":
+            name = f"{self._friendly_name} Extender"
+
         return DeviceInfo(
             identifiers=identifiers,
             manufacturer="SaveEye ApS",
-            name="SaveEye Device",
+            name=name,
             model="V1",
         )
 
@@ -623,9 +649,13 @@ class SaveEyeSensor(SensorEntity):
         if not devices:
             return None
 
-        # Use first device in mapping for now (single-topic, single-device assumption).
-        serial, payload = next(iter(devices.items()))
-        self._device_serial = serial
+        if self._is_legacy:
+            serial, payload = next(iter(devices.items()))
+        else:
+            payload = devices.get(self._device_serial)
+            
+        if not payload:
+            return None
 
         current: Any = payload
         for path_part in self._description.json_path:

@@ -5,7 +5,7 @@
 ### Features
 
 - **UI-only configuration** via Home Assistant config flow (no YAML required).
-- **MQTT-based**: subscribes to a configurable topic (default `saveeye/telemetry`).
+- **MQTT-based**: subscribes to the default `saveeye/telemetry` topic.
 - Creates sensor entities for key SaveEye metrics (energy, power, voltage, current, Wi‑Fi RSSI etc.).
 - Designed to be installed as a **HACS custom repository**.
 
@@ -14,7 +14,7 @@
 - A running Home Assistant instance.
 - HACS setup and running
 - MQTT broker configured in Home Assistant (e.g. Mosquitto add-on).
-- SaveEye device configured for **Local MQTT** via the SaveEye app, pointing to the same broker and topic.
+- SaveEye device configured for **Local MQTT** via the SaveEye app, pointing to the same broker.
 
 ### Installation via HACS
 
@@ -28,9 +28,9 @@
 - Go to **Settings → Devices & services → Add integration** and search for **SaveEye**.
 - Enter:
   - **Device name** – a friendly label used for the device.
-  - **MQTT topic** – keep the default `saveeye/telemetry` or adjust if you use another topic.
-- Finish the flow; entities will start updating as soon as telemetry messages arrive on the topic.
+  - **Serial number** – the serial number of the device you want to track (e.g., J85LH2H4).
+- Finish the flow; entities will start updating as soon as telemetry messages arrive from that device.
 
 ### Notes
 
-- This integration assumes a single SaveEye device publishing on the configured topic.
+- This integration supports tracking multiple SaveEye devices. Simply use add device under the integration, providing a different Serial Number each time.
