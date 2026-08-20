@@ -1,7 +1,7 @@
 {
   "domain": "saveeye",
   "name": "SaveEye",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "documentation": "https://github.com/saveeye/SaveEye-HomeAssistant",
   "requirements": [],
   "dependencies": [
